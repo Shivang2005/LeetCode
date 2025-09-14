@@ -1,36 +1,42 @@
+import java.util.*;
+
 class Solution {
     public String[] spellchecker(String[] wordlist, String[] queries) {
-        Set<String> words = new HashSet<>(Arrays.asList(wordlist));
-        Map<String, String> cap = new HashMap<>();
-        Map<String, String> vowel = new HashMap<>();
+        Set<String> exact = new HashSet<>(Arrays.asList(wordlist));
+        Map<String, String> caseInsensitive = new HashMap<>();
+        Map<String, String> vowelInsensitive = new HashMap<>();
+        
         for (String w : wordlist) {
-            cap.putIfAbsent(w.toLowerCase(), w);
-            vowel.putIfAbsent(devowel(w.toLowerCase()), w);
+            String lower = w.toLowerCase();
+            caseInsensitive.putIfAbsent(lower, w);
+            vowelInsensitive.putIfAbsent(devowel(lower), w);
         }
+        
         String[] res = new String[queries.length];
         for (int i = 0; i < queries.length; i++) {
             String q = queries[i];
-            if (words.contains(q)) {
+            if (exact.contains(q)) {
                 res[i] = q;
-            } else {
-                String low = q.toLowerCase();
-                if (cap.containsKey(low)) {
-                    res[i] = cap.get(low);
-                } else {
-                    String vow = devowel(low);
-                    res[i] = vowel.getOrDefault(vow, "");
-                }
+                continue;
             }
+            String lower = q.toLowerCase();
+            if (caseInsensitive.containsKey(lower)) {
+                res[i] = caseInsensitive.get(lower);
+                continue;
+            }
+            String vow = devowel(lower);
+            res[i] = vowelInsensitive.getOrDefault(vow, "");
         }
         return res;
     }
 
     private String devowel(String word) {
-        StringBuilder sb = new StringBuilder();
-        for (char c : word.toCharArray()) {
-            if ("aeiou".indexOf(c) >= 0) sb.append('*');
-            else sb.append(c);
+        char[] arr = word.toCharArray();
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i] == 'a' || arr[i] == 'e' || arr[i] == 'i' || arr[i] == 'o' || arr[i] == 'u') {
+                arr[i] = '*';
+            }
         }
-        return sb.toString();
+        return new String(arr);
     }
 }
