@@ -1,21 +1,16 @@
-import java.util.*;
-
 class Solution {
     public List<Integer> replaceNonCoprimes(int[] nums) {
-        LinkedList<Integer> stack = new LinkedList<>();
+        ArrayList<Integer> stack = new ArrayList<>();
         for (int num : nums) {
             stack.add(num);
-            while (stack.size() > 1) {
-                int b = stack.removeLast();
-                int a = stack.removeLast();
+            while (stack.size() >= 2) {
+                int b = stack.get(stack.size() - 1);
+                int a = stack.get(stack.size() - 2);
                 int g = gcd(a, b);
-                if (g == 1) {
-                    stack.add(a);
-                    stack.add(b);
-                    break;
-                }
-                long lcm = (long) a / g * b;
-                stack.add((int) lcm);
+                if (g == 1) break;
+                stack.remove(stack.size() - 1);
+                stack.remove(stack.size() - 1);
+                stack.add((int) ((long) a / g * b));
             }
         }
         return stack;
