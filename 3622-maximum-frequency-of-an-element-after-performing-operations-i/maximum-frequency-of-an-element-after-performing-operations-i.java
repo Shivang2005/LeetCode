@@ -1,45 +1,50 @@
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 class Solution {
     public int maxFrequency(int[] nums, int k, int numOperations) {
         Arrays.sort(nums);
         int n = nums.length;
-        if (n == 0) {
-            return 0;
+        
+        Set<Long> candidateSet = new HashSet<>();
+        for (int num : nums) {
+            candidateSet.add((long) num);
+            candidateSet.add((long) num - k);
+            candidateSet.add((long) num + k);
         }
 
-        // 1. Gather all critical points to test as targets
-        Set<Long> targetCandidates = new HashSet<>();
+        List<Long> targets = new ArrayList<>(candidateSet);
+        Collections.sort(targets);
+
+        Map<Long, Integer> freqMap = new HashMap<>();
         for (int num : nums) {
-            targetCandidates.add((long) num);
-            targetCandidates.add((long) num - k);
-            targetCandidates.add((long) num + k);
+            freqMap.put((long) num, freqMap.getOrDefault((long) num, 0) + 1);
         }
 
         int maxFreq = 0;
+        int left = 0;
+        int right = 0;
 
-        // 2. Test each candidate target
-        for (long target : targetCandidates) {
-            // Count C: all numbers convertible to the target
-            int C_start = lowerBound(nums, target - k);
-            int C_end = upperBound(nums, target + k);
-            int C = C_end - C_start;
+        for (long target : targets) {
+            long lowerBound = target - k;
+            long upperBound = target + k;
 
-            // Count E: all numbers already equal to the target
-            int E = 0;
-            // E is non-zero only if target is a valid integer and present
-            if (target >= Integer.MIN_VALUE && target <= Integer.MAX_VALUE) {
-                int E_start = lowerBound(nums, target);
-                int E_end = upperBound(nums, target);
-                // Check if the element actually exists at that position
-                if (E_start < n && nums[E_start] == target) {
-                     E = E_end - E_start;
-                }
+            while (left < n && nums[left] < lowerBound) {
+                left++;
             }
-            
-            // 3. Apply the correct frequency formula
+            while (right < n && nums[right] <= upperBound) {
+                right++;
+            }
+
+            int C = right - left;
+            int E = freqMap.getOrDefault(target, 0);
+
             int currentFreq = Math.min(C, E + numOperations);
             if (currentFreq > maxFreq) {
                 maxFreq = currentFreq;
@@ -47,33 +52,5 @@ class Solution {
         }
 
         return maxFreq;
-    }
-
-    // Finds the first index of an element >= key
-    private int lowerBound(int[] nums, long key) {
-        int low = 0, high = nums.length;
-        while (low < high) {
-            int mid = low + (high - low) / 2;
-            if (nums[mid] >= key) {
-                high = mid;
-            } else {
-                low = mid + 1;
-            }
-        }
-        return low;
-    }
-
-    // Finds the first index of an element > key
-    private int upperBound(int[] nums, long key) {
-        int low = 0, high = nums.length;
-        while (low < high) {
-            int mid = low + (high - low) / 2;
-            if (nums[mid] > key) {
-                high = mid;
-            } else {
-                low = mid + 1;
-            }
-        }
-        return low;
     }
 }
