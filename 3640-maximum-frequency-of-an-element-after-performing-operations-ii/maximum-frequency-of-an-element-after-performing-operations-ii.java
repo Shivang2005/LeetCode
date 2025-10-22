@@ -1,64 +1,35 @@
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 class Solution {
     public int maxFrequency(int[] nums, int k, int numOperations) {
-        int n = nums.length;
-        Arrays.sort(nums);
+        Map<Integer, Integer> cnt = new HashMap<>();
+        Map<Integer, Integer> line = new TreeMap<>();
 
-        Set<Long> candidates = new HashSet<>();
         for (int num : nums) {
-            candidates.add((long) num);
-            candidates.add((long) num - k);
-            candidates.add((long) num + k);
+            cnt.put(num, cnt.getOrDefault(num, 0) + 1);
+            
+            int start = num - k;
+            int end = num + k;
+
+            line.put(start, line.getOrDefault(start, 0) + 1);
+            line.put(end + 1, line.getOrDefault(end + 1, 0) - 1);
+            line.put(num, line.getOrDefault(num, 0)); 
         }
 
         int maxFreq = 0;
+        int potential = 0;
 
-        for (long t : candidates) {
-            long tMinusK = t - k;
-            long tPlusK = t + k;
-
-            int potential = upper_bound(nums, tPlusK) - lower_bound(nums, tMinusK);
+        for (Map.Entry<Integer, Integer> entry : line.entrySet()) {
+            int t = entry.getKey();
+            potential += entry.getValue();
             
-            int current = 0;
-            if (t >= Integer.MIN_VALUE && t <= Integer.MAX_VALUE) {
-                current = upper_bound(nums, (int) t) - lower_bound(nums, (int) t);
-            }
+            int current = cnt.getOrDefault(t, 0);
 
-            int achievableFreq = Math.min(potential, current + numOperations);
-            maxFreq = Math.max(maxFreq, achievableFreq);
+            maxFreq = Math.max(maxFreq, Math.min(potential, current + numOperations));
         }
 
         return maxFreq;
-    }
-
-    private int lower_bound(int[] a, long key) {
-        int low = 0;
-        int high = a.length;
-        while (low < high) {
-            int mid = low + (high - low) / 2;
-            if (a[mid] < key) {
-                low = mid + 1;
-            } else {
-                high = mid;
-            }
-        }
-        return low;
-    }
-
-    private int upper_bound(int[] a, long key) {
-        int low = 0;
-        int high = a.length;
-        while (low < high) {
-            int mid = low + (high - low) / 2;
-            if (a[mid] <= key) {
-                low = mid + 1;
-            } else {
-                high = mid;
-            }
-        }
-        return low;
     }
 }
